@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -23,8 +25,13 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte("Write a snippet"))
-	log.Print("accessed view")
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+	fmt.Fprintf(w, "Showing a snippet wit ID %d...", id)
+	log.Print("accessed view with ID")
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
