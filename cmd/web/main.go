@@ -30,22 +30,15 @@ func main() {
 	} else {
 		logLevel.Set(slog.LevelDebug)
 	}
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 	app := &application{
 		logger: logger,
 	}
-	fileServer := http.FileServer(http.Dir("./ui/Static/"))
-
-	//Using a serveMux is good practise because we can define all routes here instead of having many http handlefuncs
-	mux := http.NewServeMux()
-	mux.Handle("/Static/", http.StripPrefix("/Static", fileServer))
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
 	logger.Info("Starting server", "port", *addr)
 	//ListenAndServe takes the port and the mux
-	err := http.ListenAndServe(*addr, mux)
+	err := http.ListenAndServe(*addr, app.muxroutes())
 	logger.Error(err.Error())
 	os.Exit(1)
 }
