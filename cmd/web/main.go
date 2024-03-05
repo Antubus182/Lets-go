@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -18,6 +19,8 @@ func main() {
 	// encountered during parsing the application will be terminated.
 	flag.Parse()
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	fileServer := http.FileServer(http.Dir("./ui/Static/"))
 
 	//Using a serveMux is good practise because we can define all routes here instead of having many http handlefuncs
@@ -27,8 +30,9 @@ func main() {
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
-	log.Print("Starting server on " + *addr)
+	logger.Info("Starting server", "port", *addr)
 	//ListenAndServe takes the port and the mux
 	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	logger.Error(err.Error())
+	os.Exit(1)
 }

@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 )
+
+var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 func home(w http.ResponseWriter, r *http.Request) {
 	templates := []string{
@@ -17,13 +21,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
 		http.Error(w, "Unregistered path", http.StatusTeapot) //Go supports 418 I'm a teapot
-		log.Print("Accessed illegal, returned not found")
+		logger.Warn("Accessed illegal, returned not found", slog.String("Path", r.URL.Path))
 		return
 	}
 
 	ts, err := template.ParseFiles(templates...)
 	if err != nil {
-		log.Print(err.Error())
+		logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -32,7 +36,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
 	}
-	log.Print("Accessed Home page")
+	logger.Info("Accessed Home page")
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +51,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "Showing a snippet wit ID %d...", id)
-	log.Print("accessed view with ID")
+	logger.Info("accessed view with ID")
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -56,12 +60,12 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(405) //405= Method Not Allowed
 		//if we want a non 200 header we need to call this before the w.Write call
 		w.Write([]byte("Method not Allowed"))
-		log.Print("non Post request on snippetCreate")
+		logger.Warn("non Post request on snippetCreate")
 		return
 	}
 
 	w.Write([]byte("Create a new Snippet"))
-	log.Print("accessed create")
+	logger.Info("accessed create")
 }
 
 func JsonReturn(w http.ResponseWriter, r *http.Request) {
