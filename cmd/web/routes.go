@@ -12,6 +12,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	templates := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/pages/home.tmpl",
+		"./ui/html/partials/nav.tmpl",
 	}
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
@@ -31,6 +32,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
 	}
+	log.Print("Accessed Home page")
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
