@@ -6,11 +6,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"strconv"
 )
-
-var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 func home(w http.ResponseWriter, r *http.Request) {
 	templates := []string{
@@ -36,7 +33,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
 	}
-	logger.Info("Accessed Home page")
+	logger.Debug("Accessed Home page")
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +48,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "Showing a snippet wit ID %d...", id)
-	logger.Info("accessed view with ID")
+	logger.Debug("accessed view with ID")
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +62,7 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("Create a new Snippet"))
-	logger.Info("accessed create")
+	logger.Debug("accessed create")
 }
 
 func JsonReturn(w http.ResponseWriter, r *http.Request) {
