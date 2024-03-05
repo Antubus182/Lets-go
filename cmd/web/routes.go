@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	templates := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/pages/home.tmpl",
@@ -18,13 +18,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
 		http.Error(w, "Unregistered path", http.StatusTeapot) //Go supports 418 I'm a teapot
-		logger.Warn("Accessed illegal, returned not found", slog.String("Path", r.URL.Path))
+		app.logger.Warn("Accessed illegal, returned not found", slog.String("Path", r.URL.Path))
 		return
 	}
 
 	ts, err := template.ParseFiles(templates...)
 	if err != nil {
-		logger.Error(err.Error())
+		app.logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -33,10 +33,10 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
 	}
-	logger.Debug("Accessed Home page")
+	app.logger.Debug("Accessed Home page")
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		//alternative to writeheader and then write is using Error
 		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
@@ -48,21 +48,21 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "Showing a snippet wit ID %d...", id)
-	logger.Debug("accessed view with ID")
+	app.logger.Debug("accessed view with ID")
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	//Restricting this to only POST method
 	if r.Method != "POST" {
 		w.WriteHeader(405) //405= Method Not Allowed
 		//if we want a non 200 header we need to call this before the w.Write call
 		w.Write([]byte("Method not Allowed"))
-		logger.Warn("non Post request on snippetCreate")
+		app.logger.Warn("non Post request on snippetCreate")
 		return
 	}
 
 	w.Write([]byte("Create a new Snippet"))
-	logger.Debug("accessed create")
+	app.logger.Debug("accessed create")
 }
 
 func JsonReturn(w http.ResponseWriter, r *http.Request) {
