@@ -17,7 +17,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
-		http.Error(w, "Unregistered path", http.StatusTeapot) //Go supports 418 I'm a teapot
+		app.notFound(w)
 		app.logger.Warn("Accessed illegal, returned not found", slog.String("Path", r.URL.Path))
 		return
 	}
@@ -25,13 +25,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	ts, err := template.ParseFiles(templates...)
 	if err != nil {
 		app.logger.Error(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 		return
 	}
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
-		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 	}
 	app.logger.Debug("Accessed Home page")
 }
@@ -39,7 +39,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		//alternative to writeheader and then write is using Error
-		http.Error(w, "Method not Allowed", http.StatusMethodNotAllowed)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))

@@ -24,14 +24,13 @@ func main() {
 	// encountered during parsing the application will be terminated.
 	flag.Parse()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	logLevel := new(slog.LevelVar)
-	if *debugEnable {
-		logLevel.Set(slog.LevelDebug)
-	} else {
+	if !*debugEnable {
 		logLevel.Set(slog.LevelInfo)
+	} else {
+		logLevel.Set(slog.LevelDebug)
 	}
-	logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
 	app := &application{
 		logger: logger,
 	}
