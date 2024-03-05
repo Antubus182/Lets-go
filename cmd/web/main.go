@@ -1,27 +1,44 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
-var port string = ":4000"
+type application struct {
+	logger *slog.Logger
+}
 
 func main() {
 	fmt.Println("Hello Snippet")
 
-	fileServer := http.FileServer(http.Dir("./ui/Static/"))
+	addr := flag.String("addr", ":4000", "HTTP network port")
+	debugEnable := flag.Bool("debug", false, "Set the log level to debug")
+	// Importantly, we use the flag.Parse() function to parse the command-line flag.
+	// This reads in the command-line flag value and assigns it to the addr
+	// variable. You need to call this *before* you use the addr variable
+	// otherwise it will always contain the default value of ":4000". If any errors are
+	// encountered during parsing the application will be terminated.
+	flag.Parse()
 
-	//Using a serveMux is good practise because we can define all routes here instead of having many http handlefuncs
-	mux := http.NewServeMux()
-	mux.Handle("/Static/", http.StripPrefix("/Static", fileServer))
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	logLevel := new(slog.LevelVar)
+	if !*debugEnable {
+		logLevel.Set(slog.LevelInfo)
+	} else {
+		logLevel.Set(slog.LevelDebug)
+	}
 
-	log.Print("Starting server on " + port)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
+	app := &application{
+		logger: logger,
+	}
+
+	logger.Info("Starting server", "port", *addr)
 	//ListenAndServe takes the port and the mux
-	err := http.ListenAndServe(port, mux)
-	log.Fatal(err)
+	err := http.ListenAndServe(*addr, app.muxroutes())
+	logger.Error(err.Error())
+	os.Exit(1)
 }
