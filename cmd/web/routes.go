@@ -9,20 +9,24 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-
+	templates := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/pages/home.tmpl",
+	}
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
 		http.Error(w, "Unregistered path", http.StatusTeapot) //Go supports 418 I'm a teapot
 		log.Print("Accessed illegal, returned not found")
 		return
 	}
-	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+
+	ts, err := template.ParseFiles(templates...)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	err = ts.Execute(w, nil)
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Parsing error", http.StatusInternalServerError)
