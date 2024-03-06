@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"npi/snippetbox/internal/models"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
-	logger *slog.Logger
+	logger   *slog.Logger
+	snippets *models.SnippetModel
 }
 
 func main() {
@@ -37,16 +39,17 @@ func main() {
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel}))
-	app := &application{
-		logger: logger,
-	}
 
-	db, err := app.openDB(*dsn)
+	db, err := openDB(*dsn)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	} else {
-		logger.Debug("Database Connection established")
+		logger.Debug("Database Connection established and pinged")
+	}
+	app := &application{
+		logger:   logger,
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	// We also defer a call to db.Close(), so that the connection pool is closed
@@ -60,7 +63,7 @@ func main() {
 	os.Exit(1)
 }
 
-func (app *application) openDB(dsn string) (*sql.DB, error) {
+func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
@@ -71,7 +74,6 @@ func (app *application) openDB(dsn string) (*sql.DB, error) {
 		db.Close()
 		return nil, err
 	}
-	app.logger.Debug("Database Pinged")
 
 	return db, nil
 }
