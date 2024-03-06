@@ -25,7 +25,8 @@ func main() {
 	// variable. You need to call this *before* you use the addr variable
 	// otherwise it will always contain the default value of ":4000". If any errors are
 	// encountered during parsing the application will be terminated.
-	dsn := flag.String("dsn", "admin:Onveilig41@tcp(test.antubus.nl)/letsgo?parseTime=true", "MySQL data source name")
+	dsn := flag.String("dsn", "admin:Onveilig41@tcp(192.168.2.150:3306)/letsgo?parseTime=true", "MySQL data source name")
+	//password in open project, bad idea ;-)
 	flag.Parse()
 
 	logLevel := new(slog.LevelVar)
