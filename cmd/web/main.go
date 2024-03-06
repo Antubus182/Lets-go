@@ -41,12 +41,12 @@ func main() {
 		logger: logger,
 	}
 
-	db, err := openDB(*dsn)
+	db, err := app.openDB(*dsn)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	} else {
-		logger.Info("verbonden met database")
+		logger.Debug("Database Connection established")
 	}
 
 	// We also defer a call to db.Close(), so that the connection pool is closed
@@ -60,19 +60,18 @@ func main() {
 	os.Exit(1)
 }
 
-func openDB(dsn string) (*sql.DB, error) {
+func (app *application) openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("opened")
 
 	err = db.Ping()
 	if err != nil {
 		db.Close()
 		return nil, err
 	}
-	fmt.Println("pinged")
+	app.logger.Debug("Database Pinged")
 
 	return db, nil
 }
