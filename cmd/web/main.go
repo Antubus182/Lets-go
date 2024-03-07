@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// we need to add an underscore to the driver, otherwise the compiler removes the import
 type application struct {
 	logger   *slog.Logger
 	snippets *models.SnippetModel
@@ -68,12 +69,10 @@ func openDB(dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	err = db.Ping()
 	if err != nil {
 		db.Close()
 		return nil, err
 	}
-
 	return db, nil
 }
