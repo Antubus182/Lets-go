@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
-	"log"
 	"log/slog"
 	"net/http"
 	"npi/snippetbox/internal/models"
@@ -12,11 +10,7 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	templates := []string{
-		"./ui/html/base.tmpl",
-		"./ui/html/pages/home.tmpl",
-		"./ui/html/partials/nav.tmpl",
-	}
+
 	// because "/" is a subtree or catchall, we need to manually restrict access
 	if r.URL.Path != "/" {
 		app.notFound(w)
@@ -24,17 +18,34 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts, err := template.ParseFiles(templates...)
+	snippets, err := app.snippets.Latest()
 	if err != nil {
-		app.logger.Error(err.Error())
 		app.serverError(w, r, err)
 		return
 	}
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		log.Print(err.Error())
-		app.serverError(w, r, err)
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
 	}
+	/*
+		templates := []string{
+			"./ui/html/base.tmpl",
+			"./ui/html/pages/home.tmpl",
+			"./ui/html/partials/nav.tmpl",
+		}
+
+		ts, err := template.ParseFiles(templates...)
+		if err != nil {
+			app.logger.Error(err.Error())
+			app.serverError(w, r, err)
+			return
+		}
+		err = ts.ExecuteTemplate(w, "base", nil)
+		if err != nil {
+			log.Print(err.Error())
+			app.serverError(w, r, err)
+		}
+	*/
 	app.logger.Debug("Accessed Home page")
 }
 
